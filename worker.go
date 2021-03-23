@@ -1,39 +1,21 @@
 package goworker
 
 import (
-	"sync"
+	"time"
 )
 
+type IToolMaker interface {
+	Make() interface{}
+}
+
 type ITask interface {
-	Process()
+	Process(tool interface{})
+	ToolLabel() string
 }
 
 var __tasks = make(chan ITask)
 var __num_worker = counter{Value: 0}
 var __tickets = make(chan int)
-
-type counter struct {
-	mu    sync.Mutex
-	Value int
-}
-
-func (c *counter) Inc() {
-	c.mu.Lock()
-	c.Value++
-	c.mu.Unlock()
-}
-
-func (c *counter) Desc() {
-	c.mu.Lock()
-	c.Value--
-	c.mu.Unlock()
-}
-func (c *counter) UnsafeLock() {
-	c.mu.Lock()
-}
-func (c *counter) UnsafeUnlock() {
-	c.mu.Unlock()
-}
 
 const (
 	SSWorkerCommandQuit = 1
@@ -54,8 +36,14 @@ func (w *worker) goStart() {
 
 		select {
 		case task := <-__tasks:
-
-			task.Process()
+			toolLabel := task.ToolLabel()
+			if toolLabel != "" {
+				tool := borrow(toolLabel)
+				task.Process(tool)
+				go thankyou(toolLabel, tool)
+			} else {
+				task.Process(nil)
+			}
 
 		case ticket := <-__tickets:
 			if ticket == 1 {
@@ -65,13 +53,17 @@ func (w *worker) goStart() {
 				__num_worker.Desc()
 				return
 			}
+		default:
+			time.Sleep(time.Nanosecond * 10)
 		}
+
 	}
 }
 
 func OrganizeWorker(numWorker int) {
 
 	if __num_worker.Value == 0 {
+
 		for i := 0; i < numWorker; i++ {
 			newWorker := worker{}
 			go newWorker.goStart()
