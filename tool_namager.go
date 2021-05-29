@@ -13,7 +13,7 @@ var __tools = map[string]*ToolManager{}
 
 func AddTool(label string, toolMaker IToolMaker) {
 
-	AddToolWithControl(label, toolMaker, math.MaxUint32)
+	AddToolWithControl(label, toolMaker, math.MaxInt32)
 }
 func AddToolWithControl(label string, toolMaker IToolMaker, maxTool int) {
 
