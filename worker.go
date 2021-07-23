@@ -4,12 +4,20 @@ import (
 	"time"
 )
 
+type ToolQuantity int
+
+const (
+	ToolQuantityGood = ToolQuantity(0)
+	ToolQuantityBad  = ToolQuantity(1)
+)
+
 type IToolMaker interface {
-	Make() interface{}
+	//Make a tool with origin
+	Make(origin string, meta interface{}) interface{}
 }
 
 type ITask interface {
-	Process(tool interface{})
+	Process(tool interface{}) ToolQuantity
 	ToolLabel() string
 }
 
@@ -22,7 +30,8 @@ const (
 )
 
 type worker struct {
-	ID int
+	ID            int
+	currentOrigin string
 }
 
 func (w *worker) goStart() {
@@ -39,8 +48,8 @@ func (w *worker) goStart() {
 			toolLabel := task.ToolLabel()
 			if toolLabel != "" {
 				tool := borrow(toolLabel)
-				task.Process(tool)
-				go thankyou(toolLabel, tool)
+				quantity := task.Process(tool)
+				go thankyou(toolLabel, quantity, tool)
 			} else {
 				task.Process(nil)
 			}
@@ -56,7 +65,6 @@ func (w *worker) goStart() {
 		default:
 			time.Sleep(time.Nanosecond * 10)
 		}
-
 	}
 }
 

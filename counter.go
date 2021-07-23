@@ -18,9 +18,11 @@ func (c *counter) Desc() {
 	c.Value--
 	c.mu.Unlock()
 }
+
 func (c *counter) UnsafeLock() {
 	c.mu.Lock()
 }
+
 func (c *counter) UnsafeUnlock() {
 	c.mu.Unlock()
 }

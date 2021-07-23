@@ -38,8 +38,10 @@ type testTask struct {
 	Value int
 }
 
-func (t *testTask) Process(tool interface{}) {
+func (t *testTask) Process(tool interface{}) goworker.ToolQuantity {
 	fmt.Println("Process task", t.Value)
+	return goworker.ToolQuantityGood
+
 }
 func (t *testTask) ToolLabel() string {
 	return ""
@@ -53,7 +55,7 @@ type testToolMaker struct {
 	maked int
 }
 
-func (t *testToolMaker) Make() interface{} {
+func (t *testToolMaker) Make(origin string, meta interface{}) interface{} {
 	t.maked++
 	return &testTool{
 		Name: fmt.Sprint(t.maked),
@@ -64,12 +66,13 @@ type testTaskWithTool struct {
 	Value int
 }
 
-func (t *testTaskWithTool) Process(tool interface{}) {
+func (t *testTaskWithTool) Process(tool interface{}) goworker.ToolQuantity {
 	if testtool, ok := tool.(*testTool); ok {
 		fmt.Println("Process task", t.Value, "with tool", testtool.Name)
 	} else {
 		fmt.Println("Process task with error tool", t.Value)
 	}
+	return goworker.ToolQuantityGood
 }
 func (t *testTaskWithTool) ToolLabel() string {
 	return "test"
