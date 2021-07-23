@@ -1,4 +1,4 @@
-module github.com/tapvanvn/goworker
+module github.com/tapvanvn/goworker.v2
 
 go 1.16
 
