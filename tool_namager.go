@@ -92,6 +92,17 @@ func thankyou(label string, quantity ToolQuantity, tool *ToolHandle) {
 
 		manager, _ := __tools[label]
 		manager.quantityControl[tool.origin]++
+		wIndex := -1
+		for index, ori := range manager.wrandIndex {
+			if ori == tool.origin {
+				wIndex = index
+			}
+		}
+
+		if wIndex >= 0 {
+			curWeight := manager.wrand.GetWeight(wIndex)
+			manager.wrand.SetWeight(wIndex, curWeight-1)
+		}
 
 		origin, meta := manager.pickOrigin()
 		toolHandle := &ToolHandle{
