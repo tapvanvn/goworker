@@ -1,2 +1,4 @@
+github.com/tapvanvn/goworker v1.1.1 h1:O+xkx/O28mVMg6ul/vtwLOolmkwBQwjQ5qBvKYt7Hzg=
+github.com/tapvanvn/goworker v1.1.1/go.mod h1:6VM5Oqp+TLPjVTzqeCyDWXJO/b5qie8C/upOBbP1EZc=
 github.com/tapvanvn/gowrandom v0.0.1 h1:fshlWQX3QOVzNTIvEftOSF3mXFKbxnkIMwTKqu7l91s=
 github.com/tapvanvn/gowrandom v0.0.1/go.mod h1:9x3iTyrgV2ep27MUrXOlQODIZ0YE4K8ETsjIsmABYZw=

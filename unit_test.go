@@ -9,7 +9,7 @@ import (
 
 	crypto_rand "crypto/rand"
 
-	"github.com/tapvanvn/goworker"
+	"github.com/tapvanvn/goworker/v2"
 )
 
 var randArrayCase string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
