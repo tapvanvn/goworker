@@ -22,6 +22,7 @@ type ITask interface {
 }
 
 var __tasks = make(chan ITask)
+var __pending_tasks = make(chan ITask)
 var __num_worker = counter{Value: 0}
 var __tickets = make(chan int)
 
@@ -34,6 +35,10 @@ type worker struct {
 	currentOrigin string
 }
 
+func (w *worker) redoTask(task ITask) {
+	__tasks <- task
+}
+
 func (w *worker) goStart() {
 
 	__num_worker.UnsafeLock()
@@ -44,11 +49,16 @@ func (w *worker) goStart() {
 	for {
 
 		select {
+
 		case task := <-__tasks:
 			toolLabel := task.ToolLabel()
 			if toolLabel != "" {
 				tool := borrow(toolLabel)
 				quantity := task.Process(tool.tool)
+				if quantity == ToolQuantityBad {
+					//replan the task
+					go w.redoTask(task)
+				}
 				go thankyou(toolLabel, quantity, tool)
 			} else {
 				task.Process(nil)

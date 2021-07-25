@@ -2,6 +2,7 @@ package goworker
 
 import (
 	"math"
+	"sync"
 
 	"github.com/tapvanvn/gowrandom"
 )
@@ -18,6 +19,7 @@ type ToolManager struct {
 	max             int
 	wrand           *gowrandom.WRandom
 	wrandIndex      map[int]string
+	quantityMux     sync.Mutex
 	quantityControl map[string]int
 	originMeta      map[string]interface{}
 	reporter        QuantityReporter
@@ -91,7 +93,9 @@ func thankyou(label string, quantity ToolQuantity, tool *ToolHandle) {
 	if quantity == ToolQuantityBad {
 
 		manager, _ := __tools[label]
+		manager.quantityMux.Lock()
 		manager.quantityControl[tool.origin]++
+		manager.quantityMux.Unlock()
 		wIndex := -1
 		for index, ori := range manager.wrandIndex {
 			if ori == tool.origin {
@@ -132,7 +136,9 @@ func AddOrigin(label string, origin string, meta interface{}, randomWeight int) 
 		}
 		newIndex := manager.wrand.AddElement(uint(randomWeight))
 		manager.wrandIndex[newIndex] = origin
+		manager.quantityMux.Lock()
 		manager.quantityControl[origin] = 0
+		manager.quantityMux.Unlock()
 		manager.originMeta[origin] = meta
 	}
 }

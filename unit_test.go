@@ -62,19 +62,41 @@ func (t *testToolMaker) Make(origin string, meta interface{}) interface{} {
 	}
 }
 
-type testTaskWithTool struct {
+type TaskWithTool struct {
 	Value int
 }
 
-func (t *testTaskWithTool) Process(tool interface{}) goworker.ToolQuantity {
+func (t *TaskWithTool) Process(tool interface{}) goworker.ToolQuantity {
 	if testtool, ok := tool.(*testTool); ok {
-		fmt.Println("Process task", t.Value, "with tool", testtool.Name)
+		fmt.Println("Process task", t.Value, "with tool", testtool.Name, "success")
 	} else {
 		fmt.Println("Process task with error tool", t.Value)
 	}
 	return goworker.ToolQuantityGood
 }
-func (t *testTaskWithTool) ToolLabel() string {
+func (t *TaskWithTool) ToolLabel() string {
+	return "test"
+}
+
+//BAD
+type TaskWithBadTool struct {
+	Value int
+}
+
+func (t *TaskWithBadTool) Process(tool interface{}) goworker.ToolQuantity {
+
+	testtool := tool.(*testTool)
+
+	if rand.Intn(3) == 1 {
+
+		fmt.Println("Process task", t.Value, "with tool", testtool.Name, "success")
+		return goworker.ToolQuantityGood
+	}
+	fmt.Println("Process task", t.Value, "with tool", testtool.Name, "false")
+	return goworker.ToolQuantityBad
+}
+
+func (t *TaskWithBadTool) ToolLabel() string {
 	return "test"
 }
 
@@ -97,7 +119,7 @@ func TestWorkerWithTool(t *testing.T) {
 	goworker.OrganizeWorker(5)
 
 	for i := 0; i < 5; i++ {
-		task := testTaskWithTool{
+		task := TaskWithTool{
 			Value: i,
 		}
 		goworker.AddTask(&task)
@@ -105,7 +127,7 @@ func TestWorkerWithTool(t *testing.T) {
 	time.Sleep(time.Second * 2)
 
 	for i := 0; i < 5; i++ {
-		task := testTaskWithTool{
+		task := TaskWithTool{
 			Value: i,
 		}
 		goworker.AddTask(&task)
@@ -121,7 +143,7 @@ func TestWorkerWithToolControll(t *testing.T) {
 	goworker.OrganizeWorker(5)
 
 	for i := 0; i < 5; i++ {
-		task := testTaskWithTool{
+		task := TaskWithTool{
 			Value: i,
 		}
 		goworker.AddTask(&task)
@@ -129,11 +151,39 @@ func TestWorkerWithToolControll(t *testing.T) {
 	time.Sleep(time.Second * 2)
 
 	for i := 0; i < 5; i++ {
-		task := testTaskWithTool{
+		task := TaskWithTool{
 			Value: i,
 		}
 		goworker.AddTask(&task)
 	}
 
 	goworker.OrganizeWorker(0)
+}
+
+func TestWorkerWithBadToolControll(t *testing.T) {
+
+	toolMaker := testToolMaker{}
+	goworker.AddToolWithControl("test", &toolMaker, 1)
+	goworker.OrganizeWorker(1)
+
+	for i := 0; i < 5; i++ {
+		var task goworker.ITask = nil
+
+		if rand.Intn(2) == 1 {
+			fmt.Println("bad", i)
+			task = &TaskWithBadTool{
+				Value: i,
+			}
+		} else {
+			fmt.Println("good", i)
+			task = &TaskWithTool{
+				Value: i,
+			}
+		}
+
+		goworker.AddTask(task)
+	}
+	time.Sleep(time.Second)
+	time.Sleep(time.Second * 3)
+	//panic("")
 }
