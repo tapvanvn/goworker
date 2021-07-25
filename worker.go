@@ -48,7 +48,7 @@ func (w *worker) goStart() {
 			toolLabel := task.ToolLabel()
 			if toolLabel != "" {
 				tool := borrow(toolLabel)
-				quantity := task.Process(tool)
+				quantity := task.Process(tool.tool)
 				go thankyou(toolLabel, quantity, tool)
 			} else {
 				task.Process(nil)
